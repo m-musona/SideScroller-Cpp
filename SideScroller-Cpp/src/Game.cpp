@@ -4,10 +4,12 @@
 #include "Components/BGSpriteComponent.h"
 #include "Actors/Ship.h"
 #include "Actors/Character.h"
-
-#include "SDL/SDL_image.h"
+#include "Actors/Asteroid.h"
 
 #include <algorithm>
+
+#include "SDL/SDL_image.h"
+#include "GameProgCpp/Random.h"
 
 
 const float screenWidth = 1024.0f;
@@ -56,6 +58,12 @@ bool Game::Initialize()
 		-1, // Which Graphics driver to use (-1 is let SDL decide)
 		SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC // Flags (1st one is take advantage of graphics hardware 2nd one is vsync on)
 	);
+	// Verify That renderer is created
+	if (!mWindow)
+	{
+		SDL_Log("Failed to create renderer: %s", SDL_GetError());
+		return false;
+	}
 
 	// Verify SDL Image is working
 	if (IMG_Init(IMG_INIT_PNG) == 0)
@@ -63,9 +71,12 @@ bool Game::Initialize()
 		SDL_Log("Unable to initialize sdl image: %s", SDL_GetError());
 		return false;
 	}
+
+	Random::Init();
 	
 	LoadData();
 
+	mTicksCount = SDL_GetTicks();
 
 	return true;
 }
@@ -111,19 +122,26 @@ void Game::ProcessInput()
 	}
 
 	// Get State of Keyboard
-	const Uint8* state = SDL_GetKeyboardState(NULL);
+	const Uint8* keyState = SDL_GetKeyboardState(NULL);
 
 	// If escape is pressed, also end loop
-	if (state[SDL_SCANCODE_ESCAPE])
+	if (keyState[SDL_SCANCODE_ESCAPE])
 	{
 		mIsRunning = false;
 	}
 
+	mUpdatingActors = true;
+	for (auto actor : mActors)
+	{
+		actor->ProcessInput(keyState);
+	}
+	mUpdatingActors = false;
+
 	// Process ship input
-	mShip->ProcessKeyboard(state);
+	// mShip->ProcessKeyboard(state);
 
 	// Process character input
-	mCharacter->ProcessKeyboard(state);
+	// mCharacter->ProcessKeyboard(state);
 }
 
 void Game::UpdateGame()
@@ -200,12 +218,20 @@ void Game::LoadData()
 	// Create player's ship
 	mShip = new Ship(this);
 	mShip->SetPosition(Vector2(100.0f, 384.0f));
+	mShip->SetRotation(Math::PiOver2);
 	mShip->SetScale(1.5f);
 
+	// Create Asteroids
+	const int numAsteroids = 20;
+	for (int i = 0; i < numAsteroids; i++)
+	{
+		new Asteroid(this);
+	}
+
 	// Create Player Character
-	mCharacter = new Character(this);
-	mCharacter->SetPosition(Vector2(100.0f, 184.0f));
-	mCharacter->SetScale(1.0f);
+	// mCharacter = new Character(this);
+	// mCharacter->SetPosition(Vector2(100.0f, 184.0f));
+	// mCharacter->SetScale(1.0f);
 
 	// Create actor for the background (this doesn't need a subclass)
 	Actor* temp = new Actor(this);
@@ -348,6 +374,20 @@ SDL_Texture* Game::GetTexture(const std::string& filename)
 		mTextures.emplace(filename.c_str(), texture);
 	}
 	return texture;
+}
+
+void Game::AddAsteroid(Asteroid* ast)
+{
+	mAsteroids.emplace_back(ast);
+}
+
+void Game::RemoveAsteroid(Asteroid* ast)
+{
+	auto iter = std::find(mAsteroids.begin(), mAsteroids.end(), ast);
+	if (iter != mAsteroids.end())
+	{
+		mAsteroids.erase(iter);
+	}
 }
 
 

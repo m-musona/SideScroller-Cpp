@@ -26,6 +26,12 @@ public:
 	// Any actor-specific update code (overridable)
 	virtual void UpdateActor(float deltatime);
 
+	// Process Input function called from Game (not overridable)
+	void ProcessInput(const uint8_t* keyState);
+
+	// Any Actor Specific Input Code (overridable)
+	virtual void ActorInput(const uint8_t* keyState);
+
 	// Getters/Setters
 	const Vector2& GetPosition() const { return mPosition; }
 	void SetPosition(const Vector2& pos) { mPosition = pos; }
@@ -34,10 +40,13 @@ public:
 	float GetRotation() const { return mRotation; }
 	void SetRotation(float rotation) { mRotation = rotation; }
 
+	Vector2 GetForward() const { return Vector2(Math::Cos(mRotation), -Math::Sin(mRotation)); }
+
 	State GetState() const { return mState; }
 	void SetState(State state) { mState = state; }
 
 	class Game* GetGame() { return mGame; }
+
 
 	// Add/Remove components
 	void AddComponent(class Component* component);

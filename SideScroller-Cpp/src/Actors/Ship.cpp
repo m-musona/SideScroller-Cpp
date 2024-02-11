@@ -2,12 +2,13 @@
 
 #include "../Game.h"
 #include "../Components/AnimationComponent.h"
+#include "../Components/InputComponent.h"
+#include "Laser.h"
 
 
 Ship::Ship(Game* game)
 	:Actor(game),
-	mRightSpeed(0.0f),
-	mDownSpeed(0.0f)
+	mLaserCooldown(0.0f)
 {
 	AnimationComponent* animSpriteComp = new AnimationComponent(this);
 	animSpriteComp->SetLoopingAnimation(true);
@@ -22,55 +23,32 @@ Ship::Ship(Game* game)
 	std::vector<std::vector<SDL_Texture*>> animations = { animation1 };
 	animSpriteComp->SetCurrentAnimation(0);
 	animSpriteComp->SetAnimations(animations, isAnimLooping);
+
+	// Create an input component and set keys/speed
+	InputComponent* inputComp = new InputComponent(this);
+	inputComp->SetForwardKey(SDL_SCANCODE_W);
+	inputComp->SetBackKey(SDL_SCANCODE_S);
+	inputComp->SetClockwiseKey(SDL_SCANCODE_A);
+	inputComp->SetCounterClockwiseKey(SDL_SCANCODE_D);
+	inputComp->SetMaxForwardSpeed(300.0f);
+	inputComp->SetMaxAngularSpeed(Math::TwoPi);
 }
 
 void Ship::UpdateActor(float deltatime)
 {
-	Actor::UpdateActor(deltatime);
-	// Update position based on speeds and delta time
-	Vector2 pos = GetPosition();
-	pos.x += mRightSpeed * deltatime;
-	pos.y += mDownSpeed * deltatime;
-	// Restrict position to left half of screen
-	if (pos.x < 25.0f)
-	{
-		pos.x = 25.0f;
-	}
-	else if (pos.x > 500.0f)
-	{
-		pos.x = 500.0f;
-	}
-	if (pos.y < 25.0f)
-	{
-		pos.y = 25.0f;
-	}
-	else if (pos.y > 743.0f)
-	{
-		pos.y = 743.0f;
-	}
-	SetPosition(pos);
+	mLaserCooldown -= deltatime;
 }
 
-void Ship::ProcessKeyboard(const uint8_t* state)
+void Ship::ActorInput(const uint8_t* keyState)
 {
-	mRightSpeed = 0.0f;
-	mDownSpeed = 0.0f;
-	// right/left
-	if (state[SDL_SCANCODE_D])
+	if (keyState[SDL_SCANCODE_SPACE] && mLaserCooldown <= 0.0f)
 	{
-		mRightSpeed += 250.0f;
-	}
-	if (state[SDL_SCANCODE_A])
-	{
-		mRightSpeed -= 250.0f;
-	}
-	// up/down
-	if (state[SDL_SCANCODE_S])
-	{
-		mDownSpeed += 300.0f;
-	}
-	if (state[SDL_SCANCODE_W])
-	{
-		mDownSpeed -= 300.0f;
+		// Create a laser and set its position/rotation to mine
+		Laser* laser = new Laser(GetGame());
+		laser->SetPosition(GetPosition());
+		laser->SetRotation(GetRotation());
+
+		// Reset laser cooldown (half second)
+		mLaserCooldown = 0.5f;
 	}
 }

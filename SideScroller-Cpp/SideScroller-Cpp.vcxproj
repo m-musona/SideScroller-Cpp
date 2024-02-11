@@ -140,26 +140,38 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\Actor.cpp" />
+    <ClCompile Include="src\Actors\Asteroid.cpp" />
     <ClCompile Include="src\Actors\Character.cpp" />
+    <ClCompile Include="src\Actors\Laser.cpp" />
     <ClCompile Include="src\Actors\Ship.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\Component.cpp" />
     <ClCompile Include="src\Components\AnimationComponent.cpp" />
     <ClCompile Include="src\Components\BGSpriteComponent.cpp" />
+    <ClCompile Include="src\Components\CircleCollisionComponent.cpp" />
+    <ClCompile Include="src\Components\InputComponent.cpp" />
+    <ClCompile Include="src\Components\MoveComponent.cpp" />
     <ClCompile Include="src\Components\SpriteComponent.cpp" />
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\vendors\GameProgCpp\Math.cpp" />
+    <ClCompile Include="src\vendors\GameProgCpp\Random.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Actor.h" />
+    <ClInclude Include="src\Actors\Asteroid.h" />
     <ClInclude Include="src\Actors\Character.h" />
+    <ClInclude Include="src\Actors\Laser.h" />
     <ClInclude Include="src\Actors\Ship.h" />
     <ClInclude Include="src\Component.h" />
     <ClInclude Include="src\Components\AnimationComponent.h" />
     <ClInclude Include="src\Components\BGSpriteComponent.h" />
+    <ClInclude Include="src\Components\CircleCollisionComponent.h" />
+    <ClInclude Include="src\Components\InputComponent.h" />
+    <ClInclude Include="src\Components\MoveComponent.h" />
     <ClInclude Include="src\Components\SpriteComponent.h" />
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\vendors\GameProgCpp\Math.h" />
+    <ClInclude Include="src\vendors\GameProgCpp\Random.h" />
     <ClInclude Include="src\vendors\SDL\begin_code.h" />
     <ClInclude Include="src\vendors\SDL\close_code.h" />
     <ClInclude Include="src\vendors\SDL\SDL.h" />
@@ -241,6 +253,7 @@
     <ClInclude Include="src\vendors\SDL\SDL_vulkan.h" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="Assets\Asteroid\Asteroid.png" />
     <Image Include="Assets\Character\Jumping\Character07.png" />
     <Image Include="Assets\Character\Jumping\Character08.png" />
     <Image Include="Assets\Character\Jumping\Character09.png" />
@@ -268,10 +281,13 @@
     <Image Include="Assets\FarBack\Farback01.png" />
     <Image Include="Assets\FarBack\Farback02.png" />
     <Image Include="Assets\Laser\Laser.png" />
+    <Image Include="Assets\Laser\Laser2.png" />
+    <Image Include="Assets\Ship\Ship.png" />
     <Image Include="Assets\Ship\Ship01.png" />
     <Image Include="Assets\Ship\Ship02.png" />
     <Image Include="Assets\Ship\Ship03.png" />
     <Image Include="Assets\Ship\Ship04.png" />
+    <Image Include="Assets\Ship\ShipWithThrust.png" />
     <Image Include="Assets\Stars\Stars.png" />
     <Image Include="Assets\Tiles\Tiles.png" />
   </ItemGroup>
