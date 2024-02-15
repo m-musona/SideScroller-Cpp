@@ -9,12 +9,11 @@
 Laser::Laser(Game* game)
 	: Actor(game),
 	mDeathTimer(1.0f),
-	mCircle(nullptr),
-	mSprite(nullptr)
+	mCircle(nullptr)
 {
 	// Create a sprite component
-	mSprite = new SpriteComponent(this);
-	mSprite->SetTexture(game->GetTexture("Assets/Laser/Laser.png"));
+	SpriteComponent* spriteComp = new SpriteComponent(this);
+	spriteComp->SetTexture(game->GetTexture("Assets/Laser/Laser.png"));
 
 	// Create a move component, and set a forward speed
 	MoveComponent* moveComp = new MoveComponent(this);
@@ -28,7 +27,6 @@ Laser::Laser(Game* game)
 
 Laser::~Laser()
 {
-	GetGame()->RemoveSprite(this->mSprite);
 	GetGame()->RemoveActor(this);
 }
 

@@ -10,5 +10,4 @@ public:
 	class CircleCollisionComponent* GetCircle() { return mCircle; }
 private:
 	class CircleCollisionComponent* mCircle;
-	class SpriteComponent* mSprite;
 };

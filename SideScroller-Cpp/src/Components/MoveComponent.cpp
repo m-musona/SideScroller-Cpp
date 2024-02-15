@@ -1,5 +1,6 @@
 #include "MoveComponent.h"
 #include "../Actor.h"
+#include "../WindowSize.h"
 
 MoveComponent::MoveComponent(Actor* owner, int updateOrder)
 	: Component(owner, updateOrder),
@@ -24,11 +25,11 @@ void MoveComponent::Update(float deltatime)
 		position += mOwner->GetForward() * mForwardSpeed * deltatime;
 
 		// (Screen wrapping code only for asteroids)
-		if (position.x < 0.0f) { position.x = 1022.0f; }
-		else if (position.x > 1024.0f) { position.x = 2.0f; }
+		if (position.x < 0.0f) { position.x = screenWidth - 2; }
+		else if (position.x > screenWidth) { position.x = 2.0f; }
 
-		if (position.y < 0.0f) { position.y = 766.0f; }
-		else if (position.y > 768.0f) { position.y = 2.0f; }
+		if (position.y < 0.0f) { position.y = screenHeight - 2; }
+		else if (position.y > screenHeight) { position.y = 2.0f; }
 
 		mOwner->SetPosition(position);
 	}

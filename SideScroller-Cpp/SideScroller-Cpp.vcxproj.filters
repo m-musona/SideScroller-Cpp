@@ -347,6 +347,9 @@
     <ClInclude Include="src\Actors\Laser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\WindowSize.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Enemy\Enemy01.png">

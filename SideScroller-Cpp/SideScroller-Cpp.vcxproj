@@ -251,6 +251,7 @@
     <ClInclude Include="src\vendors\SDL\SDL_version.h" />
     <ClInclude Include="src\vendors\SDL\SDL_video.h" />
     <ClInclude Include="src\vendors\SDL\SDL_vulkan.h" />
+    <ClInclude Include="src\WindowSize.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Assets\Asteroid\Asteroid.png" />

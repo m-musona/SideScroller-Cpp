@@ -3,12 +3,20 @@
 #include "../Game.h"
 #include "../Components/AnimationComponent.h"
 #include "../Components/InputComponent.h"
+#include "../Components/CircleCollisionComponent.h"
+
 #include "Laser.h"
+#include "Asteroid.h"
+
+#include "../WindowSize.h"
+
+#include <iostream>
 
 
 Ship::Ship(Game* game)
 	:Actor(game),
-	mLaserCooldown(0.0f)
+	mLaserCooldown(0.0f),
+	mCircle(nullptr)
 {
 	AnimationComponent* animSpriteComp = new AnimationComponent(this);
 	animSpriteComp->SetLoopingAnimation(true);
@@ -32,11 +40,25 @@ Ship::Ship(Game* game)
 	inputComp->SetCounterClockwiseKey(SDL_SCANCODE_D);
 	inputComp->SetMaxForwardSpeed(300.0f);
 	inputComp->SetMaxAngularSpeed(Math::TwoPi);
+
+	// Create a circle component (for collision)
+	mCircle = new CircleCollisionComponent(this);
+	mCircle->SetRadius(30.0f);
 }
 
 void Ship::UpdateActor(float deltatime)
 {
 	mLaserCooldown -= deltatime;
+
+	// Do we intersect with an asteroid?
+	for (auto asteroid : GetGame()->GetAsteroids())
+	{
+		if (Intersect(*mCircle, *(asteroid->GetCircle())))
+		{
+			this->SetPosition(Vector2(screenWidth / 2, screenHeight / 2));
+			this->SetRotation(0);
+		}
+	}
 }
 
 void Ship::ActorInput(const uint8_t* keyState)

@@ -12,8 +12,7 @@
 #include "GameProgCpp/Random.h"
 
 
-const float screenWidth = 1024.0f;
-const float screenHeight = 768.0f;
+#include "WindowSize.h"
 
 Game::Game()
 	: mWindow(nullptr), 
@@ -38,9 +37,9 @@ bool Game::Initialize()
 	}
 	// Create window
 	mWindow = SDL_CreateWindow(
-		"Side Scroller", // Window Title
-		100, // Top left x-coordinate of window
-		100, // Top left y-coordinate of window
+		"Space Game", // Window Title
+		0, // Top left x-coordinate of window
+		0, // Top left y-coordinate of window
 		static_cast<int>(screenWidth), // Width of window
 		static_cast<int>(screenHeight), // Height of window
 		0 // Flags (0 for no flags set)
@@ -217,7 +216,7 @@ void Game::LoadData()
 {
 	// Create player's ship
 	mShip = new Ship(this);
-	mShip->SetPosition(Vector2(100.0f, 384.0f));
+	mShip->SetPosition(Vector2(100.0f, screenHeight/2));
 	mShip->SetRotation(Math::PiOver2);
 	mShip->SetScale(1.5f);
 

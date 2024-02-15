@@ -10,5 +10,7 @@ public:
 	void ActorInput(const uint8_t* keyState) override;
 
 private:
+	class CircleCollisionComponent* mCircle;
+
 	float mLaserCooldown;
 };

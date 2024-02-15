@@ -9,7 +9,7 @@ public:
 	Component(class Actor* owner, int updateOrder = 100);
 
 	// Destructor
-	~Component();
+	virtual ~Component();
 
 	// Update this component by delta time
 	virtual void Update(float deltatime);
