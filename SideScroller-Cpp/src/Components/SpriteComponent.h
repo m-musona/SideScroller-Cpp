@@ -9,16 +9,16 @@ public:
 	SpriteComponent(class Actor* owner, int drawOrder = 100);
 	~SpriteComponent();
 
-	virtual void Draw(SDL_Renderer* renderer);
+	virtual void Draw(class Shader* shader);
 
-	virtual void SetTexture(SDL_Texture* texture);
+	virtual void SetTexture(class Texture* texture);
 
 	int GetDrawOrder() const { return mDrawOrder; }
 	int GetTextureHeight() const { return mTextureHeight; }
 	int GetTextureWidth() const { return mTextureWidth; }
 protected:
 	// Texture to draw
-	SDL_Texture* mTexture;
+	class Texture* mTexture;
 
 	// Draw order used for painter's algorithm
 	int mDrawOrder;

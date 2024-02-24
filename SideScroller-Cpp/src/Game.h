@@ -5,7 +5,7 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
-
+#include "GameProgCpp/Math.h"
 
 class Game
 {
@@ -14,10 +14,8 @@ public:
 
 	// Initialize the Game
 	bool Initialize();
-
 	// Runs the game loop until the game is over
 	void RunLoop();
-
 	// Shutdown the game
 	void Shutdown();
 
@@ -27,7 +25,7 @@ public:
 	void AddSprite(class SpriteComponent* sprite);
 	void RemoveSprite(class SpriteComponent* sprite);
 
-	SDL_Texture* GetTexture(const std::string& filename);
+	class Texture* GetTexture(const std::string& filename);
 
 	// Game-specific (add/remove asteroid)
 	void AddAsteroid(class Asteroid* ast);
@@ -40,11 +38,13 @@ private:
 	void ProcessInput();
 	void UpdateGame();
 	void GenerateOutput();
+	bool LoadShaders();
+	void CreateSpriteVerts();
 	void LoadData();
 	void UnloadData();
 
 	// Map of textures loaded
-	std::unordered_map<std::string, SDL_Texture*> mTextures;
+	std::unordered_map<std::string, class Texture*> mTextures;
 
 	// All actors in the game
 	std::vector<class Actor*> mActors;
@@ -54,10 +54,16 @@ private:
 	// All the sprites drawn
 	std::vector<class SpriteComponent*> mSprites;
 
+	// Sprite shader
+	class Shader* mSpriteShader;
+	// Sprite vertex array
+	class VertexArray* mSpriteVerts;
+
 	// Window Created by SDL
 	SDL_Window* mWindow;
-	// SDL Renderer
-	SDL_Renderer* mRenderer;
+	// OpenGL Context
+	SDL_GLContext mContext;
+
 	Uint32 mTicksCount;
 
 	// Are we updating actors
@@ -67,6 +73,6 @@ private:
 
 	// Game-Specific
 	class Ship* mShip; // Player Ship
-	class Character* mCharacter; // Player Character
+	// class Character* mCharacter; // Player Character
 	std::vector<class Asteroid*> mAsteroids;
 };

@@ -2,6 +2,7 @@
 
 #include "../Components/SpriteComponent.h"
 #include "../Components/MoveComponent.h"
+#include "../Renderer/Texture.h"
 #include "../Game.h"
 #include "../Components/CircleCollisionComponent.h"
 

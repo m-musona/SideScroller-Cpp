@@ -11,10 +11,10 @@ public:
 	void Update(float deltatime) override;
 
 	// Set the textures used for animation
-	void SetAnimationTextures(const std::vector<SDL_Texture*>& textures);
+	void SetAnimationTextures(const std::vector<class Texture*>& textures);
 
 	// Set the textures used for animation
-	void SetAnimations(const std::vector<std::vector<SDL_Texture*>>& animations, std::vector<bool> isAnimationLooping);
+	void SetAnimations(const std::vector<std::vector<class Texture*>>& animations, std::vector<bool> isAnimationLooping);
 
 	// Set/Get the animation FPS
 	float GetAnimationFPS() const { return mAnimFPS; }
@@ -28,9 +28,9 @@ public:
 	void SetLoopingAnimation(bool isLooping) { mloopingAnimation = isLooping; }
 private:
 	// All textures in animation
-	std::vector<SDL_Texture*> mAnimTextures;
+	std::vector<class Texture*> mAnimTextures;
 	// All Animation
-	std::vector<std::vector<SDL_Texture*>> mAnimations;
+	std::vector<std::vector<class Texture*>> mAnimations;
 
 	// Is Animation Looping
 	bool mloopingAnimation;

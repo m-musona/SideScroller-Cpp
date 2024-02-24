@@ -1,5 +1,6 @@
 #include "AnimationComponent.h"
 #include "GameProgCpp/Math.h"
+#include "../Renderer/Texture.h"
 
 AnimationComponent::AnimationComponent(Actor* owner, int drawOrder)
 	: SpriteComponent(owner, drawOrder),
@@ -42,7 +43,7 @@ void AnimationComponent::Update(float deltatime)
 	}
 }
 
-void AnimationComponent::SetAnimationTextures(const std::vector<SDL_Texture*>& textures)
+void AnimationComponent::SetAnimationTextures(const std::vector<Texture*>& textures)
 {
 	// Set mAnimTextures variable to the provided textures
 	mAnimTextures = textures;
@@ -56,7 +57,7 @@ void AnimationComponent::SetAnimationTextures(const std::vector<SDL_Texture*>& t
 	}
 }
 
-void AnimationComponent::SetAnimations(const std::vector<std::vector<SDL_Texture*>>& animations, std::vector<bool> isAnimationLooping)
+void AnimationComponent::SetAnimations(const std::vector<std::vector<Texture*>>& animations, std::vector<bool> isAnimationLooping)
 {
 	mAnimations = animations;
 

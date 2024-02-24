@@ -3,22 +3,27 @@
 #include "Components/SpriteComponent.h"
 #include "Components/BGSpriteComponent.h"
 #include "Actors/Ship.h"
-#include "Actors/Character.h"
+// #include "Actors/Character.h"
 #include "Actors/Asteroid.h"
+#include "Renderer/Shader.h"
+#include "Renderer/VertexArray.h"
+#include "Renderer/Texture.h"
 
 #include <algorithm>
+#include <iostream>
 
 #include "SDL/SDL_image.h"
 #include "GameProgCpp/Random.h"
+#include "glad/glad.h"
 
 
 #include "WindowSize.h"
 
 Game::Game()
 	: mWindow(nullptr), 
-	mRenderer(nullptr), 
 	mIsRunning(true), 
 	mUpdatingActors(false),
+	mSpriteShader(nullptr),
 	mTicksCount(0)
 {
 }
@@ -35,6 +40,26 @@ bool Game::Initialize()
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
 		return false;
 	}
+
+	// Use Core Opengl profile
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+	// Specify version 4.6
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+
+	// Request a color buffer with 8-bits per RGBA channel
+	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
+	SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
+
+	// Enable double buffering
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+	// Force OpenGL to use hardware acceleration(Run on GPU)
+	SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+
 	// Create window
 	mWindow = SDL_CreateWindow(
 		"Space Game", // Window Title
@@ -42,7 +67,7 @@ bool Game::Initialize()
 		0, // Top left y-coordinate of window
 		static_cast<int>(screenWidth), // Width of window
 		static_cast<int>(screenHeight), // Height of window
-		0 // Flags (0 for no flags set)
+		SDL_WINDOW_OPENGL // Window for opengl usage
 	);
 	// Verify that window created succsefully
 	if (!mWindow)
@@ -51,25 +76,40 @@ bool Game::Initialize()
 		return false;
 	}
 
-	// Create renderer after creating window
-	mRenderer = SDL_CreateRenderer(
-		mWindow, // Window to create the renderer for
-		-1, // Which Graphics driver to use (-1 is let SDL decide)
-		SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC // Flags (1st one is take advantage of graphics hardware 2nd one is vsync on)
-	);
-	// Verify That renderer is created
-	if (!mWindow)
+	// Create Opengle context
+	mContext = SDL_GL_CreateContext(mWindow);
+	// Check if context failed to be made
+	if (mContext == NULL)
 	{
-		SDL_Log("Failed to create renderer: %s", SDL_GetError());
+		SDL_Log("Failed to Create Context: %s", SDL_GetError());
 		return false;
 	}
 
-	// Verify SDL Image is working
-	if (IMG_Init(IMG_INIT_PNG) == 0)
-	{
-		SDL_Log("Unable to initialize sdl image: %s", SDL_GetError());
+	// Initialize glad
+	if (!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress)) {
+		SDL_Log("Failed to initialize Glad: %s", SDL_GetError());
 		return false;
 	}
+
+	std::cout << std::left << "OpenGL Version: " << GLVersion.major << "." << GLVersion.minor << std::endl;
+	std::cout << std::left << "OpenGL Shading Language Version: " << (char *)glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
+	std::cout << std::left << "OpenGL Vendor: " << (char *)glGetString(GL_VENDOR) << std::endl;
+	std::cout << std::left << "OpenGL Renderer: " << (char *)glGetString(GL_RENDERER) << std::endl;
+
+	// Set OpenGL View Port
+	// int ww, wh;
+	// SDL_GetWindowSize(mWindow, &ww, &wh);
+	// glViewport(0,0, ww, wh);
+
+	// Make Sure we can create/compile shaders
+	if (!LoadShaders())
+	{
+		SDL_Log("Failed to load shaders");
+		return false;
+	}
+
+	// Create quad for drawing Sprites
+	CreateSpriteVerts();
 
 	Random::Init();
 	
@@ -94,10 +134,9 @@ void Game::Shutdown()
 {
 	// Because ~Actor calls RemoveActor, use a different style loop
 	UnloadData();
-	IMG_Quit();
 	
 	// Shutdown SDL Functions
-	SDL_DestroyRenderer(mRenderer);
+	SDL_GL_DeleteContext(mContext);
 	SDL_DestroyWindow(mWindow);
 	SDL_Quit();
 }
@@ -170,6 +209,8 @@ void Game::UpdateGame()
 	// move any pending actors to mActors
 	for (auto pending : mPendingActors)
 	{
+		pending->ComputeWorldTransform();
+
 		mActors.emplace_back(pending);
 	}
 	mPendingActors.clear();
@@ -194,31 +235,79 @@ void Game::UpdateGame()
 
 void Game::GenerateOutput()
 {
+
 	// Step 1: Clear the back buffer to a color
-	SDL_SetRenderDrawColor(mRenderer, 0 /* R */, 0 /* G */, 0 /* B */, 255 /* A */);
+	
+	// Set clear color to black
+	glClearColor(0.86f /* R */, 0.86f /* G */, 0.86f /* B */, 1.0f /* A */);
 	// Clear back buffer to current draw color
-	SDL_RenderClear(mRenderer);
+	glClear(GL_COLOR_BUFFER_BIT);
 
 	// Step 2: Draw the entire game scene
+	
+	// Enable alpha blending on the color buffer
+	glEnable(GL_BLEND);
+	glBlendFunc(
+		GL_SRC_ALPHA,			// srcFactor is srcAlpha
+		GL_ONE_MINUS_SRC_ALPHA	// dstFactor is 1 - srcAlpha
+	);
+	// Set sprite shader and vertex array objects active
+	mSpriteShader->SetActive();
+	mSpriteVerts->SetActive();
+
 	// Loop over the vector of sprite components and call Draw on each
 	for (auto sprite : mSprites)
 	{
-		sprite->Draw(mRenderer);
+		sprite->Draw(mSpriteShader);
 	}
 	
 	//Step 3: Swap the front buffer and back buffer
-	SDL_RenderPresent(mRenderer);
+	SDL_GL_SwapWindow(mWindow);
 
 
+}
+
+bool Game::LoadShaders()
+{
+	mSpriteShader = new Shader();
+
+	if (!mSpriteShader->Load("Shaders/Sprite.vert", "Shaders/Sprite.frag"))
+	{
+		return false;
+	}
+
+	mSpriteShader->SetActive();
+
+	// Set the view-projection matrix
+	Matrix4 viewProj = Matrix4::CreateSimpleViewProj(screenWidth, screenHeight);
+	mSpriteShader->SetMatrixUniform("uViewProj", viewProj);
+	return true;
+}
+
+void Game::CreateSpriteVerts()
+{
+	float vertices[] = {
+		-0.5f,  0.5f, 0.f, 0.f, 0.f, // top left
+		 0.5f,  0.5f, 0.f, 1.f, 0.f, // top right
+		 0.5f, -0.5f, 0.f, 1.f, 1.f, // bottom right
+		-0.5f, -0.5f, 0.f, 0.f, 1.f  // bottom left
+	};
+
+	unsigned int indices[] = {
+		0, 1, 2,
+		2, 3, 0
+	};
+
+	mSpriteVerts = new VertexArray(vertices, 4, indices, 6);
 }
 
 void Game::LoadData()
 {
 	// Create player's ship
 	mShip = new Ship(this);
-	mShip->SetPosition(Vector2(100.0f, screenHeight/2));
+	// mShip->SetPosition(Vector2(100.0f, screenHeight/2));
 	mShip->SetRotation(Math::PiOver2);
-	mShip->SetScale(1.5f);
+	// mShip->SetScale(1.5f);
 
 	// Create Asteroids
 	const int numAsteroids = 20;
@@ -238,8 +327,8 @@ void Game::LoadData()
 
 	// Create the "far back" background
 	BGSpriteComponent* background = new BGSpriteComponent(temp);
-	background->SetScreenSize(Vector2(screenWidth, screenHeight));
-	std::vector<SDL_Texture*> backgroundtextures = {
+	background->SetScreenSize(Vector2(screenWidth * 2, screenHeight * 2));
+	std::vector<Texture*> backgroundtextures = {
 		GetTexture("Assets/FarBack/Farback01.png"),
 		GetTexture("Assets/FarBack/Farback02.png")
 	};
@@ -249,7 +338,7 @@ void Game::LoadData()
 
 	// Create the closer background
 	background = new BGSpriteComponent(temp, 50);
-	background->SetScreenSize(Vector2(screenWidth, screenHeight));
+	background->SetScreenSize(Vector2(screenWidth * 2 , screenHeight * 2));
 
 	backgroundtextures = {
 		GetTexture("Assets/Stars/Stars.png"),
@@ -271,7 +360,8 @@ void Game::UnloadData()
 	// Destroy textures
 	for (auto i : mTextures)
 	{
-		SDL_DestroyTexture(i.second);
+		i.second->Unload();
+		delete i.second;
 	}
 	mTextures.clear();
 }
@@ -338,9 +428,9 @@ void Game::RemoveSprite(SpriteComponent* sprite)
 }
 
 // Image loading Process
-SDL_Texture* Game::GetTexture(const std::string& filename)
+Texture* Game::GetTexture(const std::string& filename)
 {
-	SDL_Texture* texture = nullptr;
+	Texture* texture = nullptr;
 	// Check if the texture is already in the map?
 	auto iter = mTextures.find(filename);
 	if (iter != mTextures.end())
@@ -349,28 +439,18 @@ SDL_Texture* Game::GetTexture(const std::string& filename)
 	}
 	else
 	{
+		texture = new Texture();
+
 		// Loads an image from file
-		// Returns a pointer to an SDL_Surface if successful other wise nullptr
-		SDL_Surface* surface = IMG_Load(filename.c_str());
-
-		if (!surface)
+		if (texture->Load(filename))
 		{
-			SDL_Log("Failed to load texture file: %s", filename.c_str());
-			return nullptr;
+			mTextures.emplace(filename, texture);
 		}
-
-		// Convert SDL_Surface to an SDL_Teexture 
-		// Returns a pointer to an SDL_Texture if successful other wise nullptr
-		texture = SDL_CreateTextureFromSurface(mRenderer, surface);
-
-		SDL_FreeSurface(surface);
-
-		if (!texture)
+		else
 		{
-			SDL_Log("Failed to convert surface to texture for: %s", filename.c_str());
-			return nullptr;
+			delete texture;
+			texture = nullptr;
 		}
-		mTextures.emplace(filename.c_str(), texture);
 	}
 	return texture;
 }
@@ -388,7 +468,3 @@ void Game::RemoveAsteroid(Asteroid* ast)
 		mAsteroids.erase(iter);
 	}
 }
-
-
-
-

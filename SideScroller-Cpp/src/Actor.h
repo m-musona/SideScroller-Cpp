@@ -1,6 +1,8 @@
 #pragma once
+
 #include <vector>
 #include "GameProgCpp/Math.h"
+#include <cstdint>
 
 class Actor
 {
@@ -34,13 +36,16 @@ public:
 
 	// Getters/Setters
 	const Vector2& GetPosition() const { return mPosition; }
-	void SetPosition(const Vector2& pos) { mPosition = pos; }
+	void SetPosition(const Vector2& pos) { mPosition = pos; mRecomputeWorldTransform = true; }
 	float GetScale() const { return mScale; }
-	void SetScale(float scale) { mScale = scale; }
+	void SetScale(float scale) { mScale = scale; mRecomputeWorldTransform = true; }
 	float GetRotation() const { return mRotation; }
-	void SetRotation(float rotation) { mRotation = rotation; }
+	void SetRotation(float rotation) { mRotation = rotation; mRecomputeWorldTransform = true; }
 
-	Vector2 GetForward() const { return Vector2(Math::Cos(mRotation), -Math::Sin(mRotation)); }
+	void ComputeWorldTransform();
+	const Matrix4& GetWorldTransform() const { return mWorldTransform; }
+
+	Vector2 GetForward() const { return Vector2(Math::Cos(mRotation), Math::Sin(mRotation)); }
 
 	State GetState() const { return mState; }
 	void SetState(State state) { mState = state; }
@@ -57,9 +62,11 @@ private:
 	State mState;
 
 	// Transform
+	Matrix4 mWorldTransform;
 	Vector2 mPosition; // Center position of actor
 	float mScale; // uniforms Scale of actor (1.0f for 100%)
 	float mRotation; // Rotation angle in radians
+	bool mRecomputeWorldTransform;
 
 	// Components held by this Actor
 	std::vector<class Component*> mComponents;

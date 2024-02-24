@@ -4,6 +4,7 @@
 #include "../Components/MoveComponent.h"
 #include "../Game.h"
 #include "../Components/CircleCollisionComponent.h"
+#include "../Renderer/Texture.h"
 #include "Asteroid.h"
 
 Laser::Laser(Game* game)

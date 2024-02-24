@@ -11,10 +11,10 @@ public:
 
 	// Update/draw overriden from parent
 	void Update(float deltatime) override;
-	void Draw(SDL_Renderer* renderer) override;
+	void Draw(class Shader* renderer) override;
 
 	// Set the textures used for the background
-	void SetBGTextures(const std::vector<SDL_Texture*>& textures);
+	void SetBGTextures(const std::vector<class Texture*>& textures);
 
 	// Get/Set screen size and scroll speed
 	void SetScreenSize(const Vector2& size) { mScreenSize = size; }
@@ -25,7 +25,7 @@ private:
 	// Struct to encapsulate each BG image and its offset
 	struct BGTexture
 	{
-		SDL_Texture* mTexture;
+		class Texture* mTexture;
 		Vector2 mOffset;
 	};
 

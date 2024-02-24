@@ -4,6 +4,7 @@
 #include "../Components/AnimationComponent.h"
 #include "../Components/InputComponent.h"
 #include "../Components/CircleCollisionComponent.h"
+#include "../Renderer/Texture.h"
 
 #include "Laser.h"
 #include "Asteroid.h"
@@ -20,7 +21,7 @@ Ship::Ship(Game* game)
 {
 	AnimationComponent* animSpriteComp = new AnimationComponent(this);
 	animSpriteComp->SetLoopingAnimation(true);
-	std::vector<SDL_Texture*> animation1 = {
+	std::vector<Texture*> animation1 = {
 		game->GetTexture("Assets/Ship/Ship01.png"),
 		game->GetTexture("Assets/Ship/Ship02.png"),
 		game->GetTexture("Assets/Ship/Ship03.png"),
@@ -28,7 +29,7 @@ Ship::Ship(Game* game)
 	};
 
 	std::vector<bool> isAnimLooping = { true };
-	std::vector<std::vector<SDL_Texture*>> animations = { animation1 };
+	std::vector<std::vector<Texture*>> animations = { animation1 };
 	animSpriteComp->SetCurrentAnimation(0);
 	animSpriteComp->SetAnimations(animations, isAnimLooping);
 
@@ -55,7 +56,7 @@ void Ship::UpdateActor(float deltatime)
 	{
 		if (Intersect(*mCircle, *(asteroid->GetCircle())))
 		{
-			this->SetPosition(Vector2(screenWidth / 2, screenHeight / 2));
+			this->SetPosition(Vector2(0, 0));
 			this->SetRotation(0);
 		}
 	}

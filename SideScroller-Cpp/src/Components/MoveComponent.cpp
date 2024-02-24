@@ -25,11 +25,16 @@ void MoveComponent::Update(float deltatime)
 		position += mOwner->GetForward() * mForwardSpeed * deltatime;
 
 		// (Screen wrapping code only for asteroids)
-		if (position.x < 0.0f) { position.x = screenWidth - 2; }
-		else if (position.x > screenWidth) { position.x = 2.0f; }
+		if (position.x < -screenWidth / 2) { position.x = screenWidth / 2 - 2; }
+		else if (position.x > screenWidth/ 2) { position.x = -screenWidth / 2 + 2; }
 
-		if (position.y < 0.0f) { position.y = screenHeight - 2; }
-		else if (position.y > screenHeight) { position.y = 2.0f; }
+		if (position.y < -screenHeight / 2) { position.y = screenHeight / 2 - 2; }
+		else if (position.y > screenHeight / 2) { position.y = -screenHeight / 2 + 2; }
+
+		/*if (position.x < -512.0f) { position.x = 510.0f; }
+		else if (position.x > 512.0f) { position.x = -510.0f; }
+		if (position.y < -384.0f) { position.y = 382.0f; }
+		else if (position.y > 384.0f) { position.y = -382.0f; }*/
 
 		mOwner->SetPosition(position);
 	}

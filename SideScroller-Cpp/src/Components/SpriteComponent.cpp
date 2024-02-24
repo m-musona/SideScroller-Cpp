@@ -1,6 +1,8 @@
 #include "SpriteComponent.h"
 #include "../Actor.h"
 #include "../Game.h"
+#include "../Renderer/Shader.h"
+#include "../Renderer/Texture.h"
 
 SpriteComponent::SpriteComponent(Actor* owner, int drawOrder)
 	: Component(owner), 
@@ -17,36 +19,42 @@ SpriteComponent::~SpriteComponent()
 	mOwner->GetGame()->RemoveSprite(this);
 }
 
-void SpriteComponent::Draw(SDL_Renderer* renderer)
+void SpriteComponent::Draw(Shader* shader)
 {
 	if (mTexture)
 	{
-		SDL_Rect r;
+		// Scale the quad by the width/height of texture
+		Matrix4 scaleMat = Matrix4::CreateScale(
+			static_cast<float>(mTextureWidth),
+			static_cast<float>(mTextureHeight),
+			1.0f);
 
-		// Scale the width/height by owner's scale
-		r.w = static_cast<int>(mTextureWidth * mOwner->GetScale());
-		r.h = static_cast<int>(mTextureHeight * mOwner->GetScale());
+		Matrix4 world = scaleMat * mOwner->GetWorldTransform();
 
-		// Center the rectangle around the position of the owner
-		r.x = static_cast<int>(mOwner->GetPosition().x - r.w / 2);
-		r.y = static_cast<int>(mOwner->GetPosition().y - r.h / 2);
+		// Since all sprites use the same shader/vertices,
+		// the game first sets them active before any sprite draws
 
-		// Draw 
-		SDL_RenderCopyEx(renderer,
-			mTexture, // Texture to draw
-			nullptr, // Source rectangle
-			&r, // Destination rectangle
-			-Math::ToDegrees(mOwner->GetRotation()), // Convert angle
-			nullptr, // Point of rotation
-			SDL_FLIP_NONE // Flip Behaviour
+		// Set world transform
+		shader->SetMatrixUniform("uWorldTransform", world);
+
+		// Set current texture
+		mTexture->SetActive();
+
+		// Draw quad
+		glDrawElements(
+			GL_TRIANGLES,		// Type of polygon/primitive to draw
+			6,					// Number of indices in index buffer
+			GL_UNSIGNED_INT,	// Type of each index
+			nullptr				// Usually nullptr
 		);
 	}
 }
 
-void SpriteComponent::SetTexture(SDL_Texture* texture)
+void SpriteComponent::SetTexture(Texture* texture)
 {
 	mTexture = texture;
 	
-	// Get width/height of texture
-	SDL_QueryTexture(texture, nullptr, nullptr, &mTextureWidth, &mTextureHeight);
+	// Set width/height of texture
+	mTextureWidth = texture->GetWidth();
+	mTextureHeight = texture->GetHeight();
 }
