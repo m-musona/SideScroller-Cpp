@@ -154,6 +154,7 @@
     <ClCompile Include="src\Game.cpp" />
     <ClCompile Include="src\Renderer\Shader.cpp" />
     <ClCompile Include="src\Renderer\Texture.cpp" />
+    <ClCompile Include="src\Systems\InputSystem.cpp" />
     <ClCompile Include="src\vendors\GameProgCpp\Math.cpp" />
     <ClCompile Include="src\vendors\GameProgCpp\Random.cpp" />
     <ClCompile Include="src\vendors\glad\src\glad.c" />
@@ -175,6 +176,7 @@
     <ClInclude Include="src\Game.h" />
     <ClInclude Include="src\Renderer\Shader.h" />
     <ClInclude Include="src\Renderer\Texture.h" />
+    <ClInclude Include="src\Systems\InputSystem.h" />
     <ClInclude Include="src\vendors\GameProgCpp\Math.h" />
     <ClInclude Include="src\vendors\GameProgCpp\Random.h" />
     <ClInclude Include="src\vendors\glad\glad.h" />

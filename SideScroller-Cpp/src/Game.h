@@ -66,6 +66,8 @@ private:
 
 	Uint32 mTicksCount;
 
+	class InputSystem* mInputSystem;
+
 	// Are we updating actors
 	bool mUpdatingActors;
 	// Game should continue to run

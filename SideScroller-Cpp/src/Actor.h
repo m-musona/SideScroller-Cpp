@@ -29,10 +29,10 @@ public:
 	virtual void UpdateActor(float deltatime);
 
 	// Process Input function called from Game (not overridable)
-	void ProcessInput(const uint8_t* keyState);
+	void ProcessInput(const struct InputState& state);
 
 	// Any Actor Specific Input Code (overridable)
-	virtual void ActorInput(const uint8_t* keyState);
+	virtual void ActorInput(const struct InputState& state);
 
 	// Getters/Setters
 	const Vector2& GetPosition() const { return mPosition; }

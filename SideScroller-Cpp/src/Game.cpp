@@ -9,6 +9,8 @@
 #include "Renderer/VertexArray.h"
 #include "Renderer/Texture.h"
 
+#include "Systems/InputSystem.h"
+
 #include <algorithm>
 #include <iostream>
 
@@ -31,7 +33,7 @@ Game::Game()
 bool Game::Initialize()
 {
 	// Iniotialize SDL library
-	int sdlResult = SDL_Init(SDL_INIT_VIDEO);
+	int sdlResult = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER);
 
 	// If sdl initialization fails return false
 	if (sdlResult != 0)
@@ -73,6 +75,14 @@ bool Game::Initialize()
 	if (!mWindow)
 	{
 		SDL_Log("Unable to create window: %s", SDL_GetError());
+		return false;
+	}
+
+	// Initialize input system
+	mInputSystem = new InputSystem();
+	if (!mInputSystem->Initialize())
+	{
+		SDL_Log("Failed to initialize input system");
 		return false;
 	}
 
@@ -143,6 +153,8 @@ void Game::Shutdown()
 
 void Game::ProcessInput()
 {
+	mInputSystem->PrepareForUpdate();
+
 	SDL_Event event;
 
 	// While there still events in the queue
@@ -152,18 +164,26 @@ void Game::ProcessInput()
 		{
 			// Handle different event types here
 
-		case SDL_QUIT:
-			mIsRunning = false;
+			case SDL_QUIT:
+				mIsRunning = false;
+				break;
 
-			break;
+			case SDL_MOUSEWHEEL:
+				mInputSystem->ProcessEvent(event);
+				break;
+
+			default:
+				break;
 		}
 	}
 
-	// Get State of Keyboard
-	const Uint8* keyState = SDL_GetKeyboardState(NULL);
+	mInputSystem->Update();
+
+	const InputState& state = mInputSystem->GetState();
 
 	// If escape is pressed, also end loop
-	if (keyState[SDL_SCANCODE_ESCAPE])
+	if (state.Keyboard.GetKeyState(SDL_SCANCODE_ESCAPE)
+		== EReleased)
 	{
 		mIsRunning = false;
 	}
@@ -171,7 +191,7 @@ void Game::ProcessInput()
 	mUpdatingActors = true;
 	for (auto actor : mActors)
 	{
-		actor->ProcessInput(keyState);
+		actor->ProcessInput(state);
 	}
 	mUpdatingActors = false;
 

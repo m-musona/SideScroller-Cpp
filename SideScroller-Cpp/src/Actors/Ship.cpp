@@ -6,6 +6,8 @@
 #include "../Components/CircleCollisionComponent.h"
 #include "../Renderer/Texture.h"
 
+#include "../Systems/InputSystem.h"
+
 #include "Laser.h"
 #include "Asteroid.h"
 
@@ -16,7 +18,8 @@
 
 Ship::Ship(Game* game)
 	:Actor(game),
-	mLaserCooldown(0.0f),
+	mLaserCooldown(0.0f), 
+	mSpeed(400.0f),
 	mCircle(nullptr)
 {
 	AnimationComponent* animSpriteComp = new AnimationComponent(this);
@@ -51,6 +54,15 @@ void Ship::UpdateActor(float deltatime)
 {
 	mLaserCooldown -= deltatime;
 
+	// Update position based on velocity
+	Vector2 pos = GetPosition();
+	pos += mVelocityDir * mSpeed * deltatime;
+	SetPosition(pos);
+
+	// Update rotation
+	float angle = Math::Atan2(mRotationDir.y, mRotationDir.x);
+	SetRotation(angle);
+
 	// Do we intersect with an asteroid?
 	for (auto asteroid : GetGame()->GetAsteroids())
 	{
@@ -62,16 +74,37 @@ void Ship::UpdateActor(float deltatime)
 	}
 }
 
-void Ship::ActorInput(const uint8_t* keyState)
+void Ship::ActorInput(const InputState& state)
 {
-	if (keyState[SDL_SCANCODE_SPACE] && mLaserCooldown <= 0.0f)
+	//if (keyState[SDL_SCANCODE_SPACE] && mLaserCooldown <= 0.0f)
+	//{
+	//	// Create a laser and set its position/rotation to mine
+	//	Laser* laser = new Laser(GetGame());
+	//	laser->SetPosition(GetPosition());
+	//	laser->SetRotation(GetRotation());
+
+	//	// Reset laser cooldown (half second)
+	//	mLaserCooldown = 0.5f;
+	//}
+
+	if (state.Controller.GetRightTrigger() > 0.25f
+		&& mLaserCooldown <= 0.0f)
 	{
 		// Create a laser and set its position/rotation to mine
 		Laser* laser = new Laser(GetGame());
 		laser->SetPosition(GetPosition());
 		laser->SetRotation(GetRotation());
 
-		// Reset laser cooldown (half second)
-		mLaserCooldown = 0.5f;
+		// Reset laser cooldown (quarter second)
+		mLaserCooldown = 0.25f;
+	}
+
+	if (state.Controller.GetIsConnected())
+	{
+		mVelocityDir = state.Controller.GetLeftStick();
+		if (!Math::NearZero(state.Controller.GetRightStick().Length()))
+		{
+			mRotationDir = state.Controller.GetRightStick();
+		}
 	}
 }
